@@ -1,0 +1,31 @@
+{
+  "name": "ghostly-cinema",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Your own films and series as a library you share with a contact in a chat: a Ghostly mini-app that builds to one self-contained HTML file.",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "tsc --noEmit -p tsconfig.json && vite build",
+    "dev": "vite",
+    "digest": "node scripts/digest.mjs",
+    "stage": "node scripts/stage.mjs",
+    "test": "vitest run",
+    "test:browser": "npm run build && playwright test",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "@types/node": "26.6.2",
+    "happy-dom": "20.14.5",
+    "typescript": "5.9.3",
+    "vite": "8.3.2",
+    "vitest": "5.0.3"
+  },
+  "overrides": {
+    "rolldown": "1.2.12"
+  }
+}

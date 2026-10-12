@@ -71,11 +71,11 @@ export class Watch {
       return Promise.resolve();
     }
     if (this.catalogue?.rev === rev) return Promise.resolve();
-    this.fetching ??= this.fetch().finally(() => (this.fetching = null));
+    this.fetching ??= this.askCatalogue().finally(() => (this.fetching = null));
     return this.fetching;
   }
 
-  private async fetch(): Promise<void> {
+  private async askCatalogue(): Promise<void> {
     const reply = await this.link.request({ k: "cat" });
     let value: unknown;
     try {

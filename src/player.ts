@@ -204,10 +204,10 @@ export class StreamPlayer {
       }
       ask = tail ? { from: tail.to } : { at: range.end };
     }
-    void this.fetch(ask);
+    void this.load(ask);
   }
 
-  private async fetch(ask: { from?: number; at?: number }): Promise<void> {
+  private async load(ask: { from?: number; at?: number }): Promise<void> {
     this.busy = true;
     const abort = new AbortController();
     this.request = abort;

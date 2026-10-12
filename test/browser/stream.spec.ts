@@ -49,6 +49,15 @@ async function share(side: Side): Promise<void> {
 }
 
 const video = (side: Side) => side.frame.getByTestId("video");
+
+/** Some engine builds have no H.264 (Playwright's WebKit on Linux may not): the stream tests then say so and stop. */
+async function skipWithoutH264(side: Side): Promise<void> {
+  const ok = await side.frame.evaluate(() => {
+    const ctor = (window as unknown as { MediaSource?: typeof MediaSource; ManagedMediaSource?: typeof MediaSource }).MediaSource ?? (window as unknown as { ManagedMediaSource?: typeof MediaSource }).ManagedMediaSource;
+    return !!ctor && ctor.isTypeSupported('video/mp4; codecs="avc1.4d400b, mp4a.40.2"');
+  });
+  test.skip(!ok, "this browser build plays no H.264 with AAC in Media Source");
+}
 const time = (side: Side) => video(side).evaluate((v: HTMLVideoElement) => v.currentTime);
 
 test("Ana streams Miguel's film: plays, seeks ahead, subtitles, resume", async ({ browser, browserName }) => {
@@ -59,6 +68,7 @@ test("Ana streams Miguel's film: plays, seeks ahead, subtitles, resume", async (
     const miguel = await openSide(browser, room, { name: "miguel", displayName: "Miguel" });
     const ana = await openSide(browser, room, { name: "ana", displayName: "Ana", locale: "pt-BR" });
     for (const side of [miguel, ana]) side.page.on("pageerror", (e) => errors.push(`${side.name}: ${e.message}`));
+    await skipWithoutH264(ana);
 
     // Before Miguel shares, Ana sees that he has not.
     await expect(ana.frame.getByTestId("empty")).toContainText("Miguel ainda não compartilhou");
@@ -125,6 +135,7 @@ test("an episode, and the next one from the player", async ({ browser }) => {
   try {
     const miguel = await openSide(browser, room, { name: "miguel", displayName: "Miguel" });
     const ana = await openSide(browser, room, { name: "ana", displayName: "Ana" });
+    await skipWithoutH264(ana);
     await share(miguel);
     await ana.frame.getByTestId("row-series").getByTestId("card").click();
     await expect(ana.frame.getByTestId("episodes")).toContainText("Low");

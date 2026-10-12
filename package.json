@@ -9,6 +9,8 @@
     "node": ">=22"
   },
   "scripts": {
+    "check:bundle": "node scripts/bundle.mjs",
+    "gen:fixtures": "node scripts/fixtures.mjs",
     "build": "tsc --noEmit -p tsconfig.json && vite build",
     "dev": "vite",
     "digest": "node scripts/digest.mjs",

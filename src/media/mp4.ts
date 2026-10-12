@@ -254,7 +254,33 @@ function parseTrak(b: Uint8Array, trak: Box, movieScale: number, fileSize: numbe
     }
   }
   if (shift) for (let s = 0; s < n; s++) cts[s] += shift;
-  return { id, kind, codec, timescale, language, stsd: b.slice(stsd.start, stsd.end), width, height, offsets, sizes, dts, durations, cts, sync };
+  const description = kind === "audio" ? isoAudioStsd(b, stsd, entry, timescale) : b.slice(stsd.start, stsd.end);
+  return { id, kind, codec, timescale, language, stsd: description, width, height, offsets, sizes, dts, durations, cts, sync };
+}
+
+/**
+ * The `stsd` for an init segment. A QuickTime sound entry (version 1 or 2, as in a `.mov`) carries more fields than
+ * an ISO one and keeps its `esds` inside a `wave` box; Chromium's Media Source refuses it. It is written again as a
+ * version 0 entry with `esds` at the top, the way an MP4 has it.
+ */
+function isoAudioStsd(b: Uint8Array, stsd: Box, entry: Box, timescale: number): Uint8Array {
+  const version = u16(b, entry.body + 8);
+  if (version === 0) return b.slice(stsd.start, stsd.end);
+  const channels = version === 2 ? u32(b, entry.body + 28 + 16) : u16(b, entry.body + 16);
+  const rate = version === 2 ? timescale : u32(b, entry.body + 24) >>> 16;
+  const kids = children(b, entry.body + 28 + (version === 1 ? 16 : 36), entry.end);
+  const w = new Writer();
+  w.box("stsd", { version: 0, flags: 0 }).u32(1);
+  w.box(entry.type).zeros(6).u16(1).u16(0).u16(0).u32(0).u16(channels || 2).u16(16).u16(0).u16(0).u32((rate & 0xffff) * 65536);
+  for (const kid of kids) {
+    if (kid.type === "wave") {
+      for (const inner of children(b, kid.body, kid.end)) if (inner.type === "esds" || inner.type === "dOps" || inner.type === "dac3" || inner.type === "dec3") w.bytes(b.subarray(inner.start, inner.end));
+    } else if (kid.type !== "chan") {
+      w.bytes(b.subarray(kid.start, kid.end));
+    }
+  }
+  w.end().end();
+  return w.done();
 }
 
 function readSizes(b: Uint8Array, box: Box): Uint32Array {

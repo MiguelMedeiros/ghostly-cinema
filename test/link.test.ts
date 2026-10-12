@@ -79,6 +79,19 @@ describe("a transfer", () => {
     expect([a.bytes.length, b.bytes.length, c.bytes.length]).toEqual([CHUNK_BYTES * 5, 5000, 5000]);
   }, 15_000);
 
+  it("answers a small request asked while a big one's chunks are being sent", async () => {
+    // A frame put first in the queue while chat.send still had the one before was once lost, and with it every
+    // answer after it.
+    const { owner, guest, client } = pair(async (ask) => ({ bytes: random(ask.k === "sub" ? 103 : CHUNK_BYTES * 30) }));
+    owner.channel = { sendDelayMs: 5 };
+    guest.channel = { sendDelayMs: 5 };
+    const big = client.request({ k: "seg", from: 0 });
+    await new Promise((r) => setTimeout(r, 150));
+    const small = await Promise.all(Array.from({ length: 5 }, (_, i) => client.request({ k: "sub", id: "x", s: String(i) })));
+    expect(small.map((r) => r.bytes.length)).toEqual([103, 103, 103, 103, 103]);
+    expect((await big).bytes.length).toBe(CHUNK_BYTES * 30);
+  }, 15_000);
+
   it("stops when the contact closes the app, and when cancelled", async () => {
     const data = random(CHUNK_BYTES * 200);
     const { owner, guest, client } = pair(async () => ({ bytes: data }));

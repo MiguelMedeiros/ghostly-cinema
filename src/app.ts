@@ -3,6 +3,7 @@
  * `hello` each side says when the other opens. Either side may share a library and watch the other's.
  *
  *   hello {v, rev, name?}   on start and whenever the contact opens: this side's library revision (0: none)
+ *   hello {…, re: 1}        the answer to a hello: what was said before the contact's app listened may be lost
  *   lib {rev}               this side's library changed
  */
 import { Link, PROTOCOL } from "./link.ts";
@@ -67,8 +68,8 @@ export class Cinema {
     this.changed();
   }
 
-  private hello(): void {
-    void this.link.say({ t: "hello", v: PROTOCOL, rev: this.share.rev, ...(this.name && { name: this.name.slice(0, 64) }) }).catch(() => {});
+  private hello(answer = false): void {
+    void this.link.say({ t: "hello", v: PROTOCOL, rev: this.share.rev, ...(this.name && { name: this.name.slice(0, 64) }), ...(answer && { re: 1 }) }).catch(() => {});
   }
 
   private frame(f: { [key: string]: unknown }): void {
@@ -77,6 +78,7 @@ export class Cinema {
       const name = typeof f.name === "string" ? f.name.replace(/[\u0000-\u001f\u007f]/g, "").trim().slice(0, 64) : undefined;
       this.peer = { ...this.peer, open: true, ...(typeof f.v === "number" && { protocol: f.v }), ...(name && { name }) };
       this.changed();
+      if (f.re !== 1) this.hello(true);
       if (rev !== undefined) void this.watch.heard(rev).catch(() => {});
     } else if (f.t === "lib" && rev !== undefined) {
       void this.watch.heard(rev).catch(() => {});

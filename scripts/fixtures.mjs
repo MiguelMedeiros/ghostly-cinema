@@ -28,6 +28,8 @@ const files = {
     "-metadata:s:a:0", "language=por", "-metadata:s:a:1", "language=eng", "-fflags", "+bitexact", "-flags:v", "+bitexact", "-flags:a", "+bitexact"],
   "silent.mp4": [...video(2), ...h264, "-an", ...clean],
   "episode.mkv": [...video(2), ...tone(2), ...h264, ...aac, ...clean],
+  // Long enough to seek in and to leave half-watched: 90 s, a keyframe every 2 s.
+  "long.mp4": [...video(90, "320x180"), ...tone(90, 220), ...h264.map((a) => (a === "25" ? "50" : a === "35" ? "42" : a)), ...aac, ...clean],
   "fragmented.mp4": [...video(2), ...tone(2), ...h264, ...aac, ...clean, "-movflags", "frag_keyframe+empty_moov"],
 };
 

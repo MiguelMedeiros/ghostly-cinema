@@ -1,0 +1,153 @@
+/** The words of the app: English, and Brazilian Portuguese. A language missing a string fails the typecheck. */
+
+const en = {
+  title: "Cinema",
+  theirLibrary: (name: string) => `${name}'s library`,
+  theirLibraryNoName: "Their library",
+  myLibrary: "My library",
+  contact: "your contact",
+  contactOnline: (name: string) => `${name} has Cinema open`,
+  contactOffline: (name: string) => `${name} doesn't have Cinema open`,
+  alone: "Open Cinema in a chat to share a library with a contact.",
+  waitingFor: (name: string) => `Waiting for ${name} to open Cinema in this chat.`,
+  noLibrary: (name: string) => `${name} hasn't shared a library yet.`,
+  shareYours: "You can share yours in My library.",
+  offlineBrowse: (name: string) => `${name} is away: you can browse, and play once ${name} opens Cinema again.`,
+  continueWatching: "Continue watching",
+  recentlyAdded: "Recently added",
+  films: "Films",
+  series: "Series",
+  search: "Search",
+  noResults: "Nothing with that name.",
+  play: "Play",
+  resume: "Resume",
+  fromStart: "From the start",
+  details: "Details",
+  close: "Close",
+  back: "Back",
+  season: (n: number) => (n === 0 ? "Specials" : `Season ${n}`),
+  episode: (n: number) => `Episode ${n}`,
+  episodes: (n: number) => (n === 1 ? "1 episode" : `${n} episodes`),
+  seasons: (n: number) => (n === 1 ? "1 season" : `${n} seasons`),
+  minutes: (m: number) => (m < 60 ? `${m} min` : `${Math.floor(m / 60)} h ${String(m % 60).padStart(2, "0")} min`),
+  left: (m: number) => `${m} min left`,
+  audio: "Audio",
+  subtitles: "Subtitles",
+  subtitlesOff: "Off",
+  forced: "forced",
+  sdh: "SDH",
+  unknownLanguage: "Unknown",
+  nextEpisode: "Next episode",
+  needsConvert: "Needs converting to MP4",
+  convertHint: "Cinema plays MP4, M4V and MOV. Convert without losing quality:",
+  cannotPlay: "This device can't play this video's format",
+  damaged: "This file could not be read",
+  starting: "Starting…",
+  buffering: "Loading…",
+  speed: (mbps: string) => `${mbps} Mbit/s`,
+  errorPeerClosed: (name: string) => `${name} closed Cinema. The film continues when ${name} opens it again.`,
+  errorNotPicked: (name: string) => `${name} needs to pick the folder again in Cinema to play from it.`,
+  errorGeneric: "This video stopped. Try again.",
+  tryAgain: "Try again",
+  shareFolder: "Share a folder",
+  shareFiles: "Pick files",
+  shareExplain: (name: string) =>
+    `Pick the folder with your films and series. Nothing is copied or uploaded: ${name} streams from this device while you both have Cinema open.`,
+  sharePrivacy: "Only names, lengths and small pictures go to your contact, never where the files are on your disk.",
+  pickAgain: (folder: string) => `Pick “${folder}” again`,
+  pickAgainExplain: "Ghostly apps can't keep access to a folder yet: pick it again each time you open Cinema, and your contact can play from it.",
+  reading: (done: number, total: number) => `Reading your files: ${done} of ${total}`,
+  libraryCounts: (films: number, shows: number, episodes: number) => `${films} films · ${shows} series · ${episodes} episodes`,
+  toConvert: (n: number) => (n === 1 ? "1 file needs converting" : `${n} files need converting`),
+  stopSharing: "Stop sharing",
+  stopSharingConfirm: "Stop sharing this library with your contact? Your files are not touched.",
+  sharedWith: (name: string) => `Shared with ${name}`,
+  playHere: "Play here",
+  titleCard: "No picture",
+};
+
+export type Strings = typeof en;
+
+const pt: Strings = {
+  title: "Cinema",
+  theirLibrary: (name) => `Biblioteca de ${name}`,
+  theirLibraryNoName: "Biblioteca do contato",
+  myLibrary: "Minha biblioteca",
+  contact: "seu contato",
+  contactOnline: (name) => `${name} está com o Cinema aberto`,
+  contactOffline: (name) => `${name} não está com o Cinema aberto`,
+  alone: "Abra o Cinema numa conversa para compartilhar uma biblioteca com um contato.",
+  waitingFor: (name) => `Esperando ${name} abrir o Cinema nesta conversa.`,
+  noLibrary: (name) => `${name} ainda não compartilhou uma biblioteca.`,
+  shareYours: "Você pode compartilhar a sua em Minha biblioteca.",
+  offlineBrowse: (name) => `${name} saiu: dá para navegar, e assistir quando ${name} abrir o Cinema de novo.`,
+  continueWatching: "Continuar assistindo",
+  recentlyAdded: "Adicionados recentemente",
+  films: "Filmes",
+  series: "Séries",
+  search: "Buscar",
+  noResults: "Nada com esse nome.",
+  play: "Assistir",
+  resume: "Continuar",
+  fromStart: "Do começo",
+  details: "Detalhes",
+  close: "Fechar",
+  back: "Voltar",
+  season: (n) => (n === 0 ? "Especiais" : `Temporada ${n}`),
+  episode: (n) => `Episódio ${n}`,
+  episodes: (n) => (n === 1 ? "1 episódio" : `${n} episódios`),
+  seasons: (n) => (n === 1 ? "1 temporada" : `${n} temporadas`),
+  minutes: (m) => (m < 60 ? `${m} min` : `${Math.floor(m / 60)} h ${String(m % 60).padStart(2, "0")} min`),
+  left: (m) => `faltam ${m} min`,
+  audio: "Áudio",
+  subtitles: "Legendas",
+  subtitlesOff: "Desligadas",
+  forced: "forçada",
+  sdh: "SDH",
+  unknownLanguage: "Desconhecido",
+  nextEpisode: "Próximo episódio",
+  needsConvert: "Precisa converter para MP4",
+  convertHint: "O Cinema toca MP4, M4V e MOV. Converta sem perder qualidade:",
+  cannotPlay: "Este aparelho não toca o formato deste vídeo",
+  damaged: "Não foi possível ler este arquivo",
+  starting: "Começando…",
+  buffering: "Carregando…",
+  speed: (mbps) => `${mbps} Mbit/s`,
+  errorPeerClosed: (name) => `${name} fechou o Cinema. O filme continua quando ${name} abrir de novo.`,
+  errorNotPicked: (name) => `${name} precisa escolher a pasta de novo no Cinema para assistir.`,
+  errorGeneric: "Este vídeo parou. Tente de novo.",
+  tryAgain: "Tentar de novo",
+  shareFolder: "Compartilhar uma pasta",
+  shareFiles: "Escolher arquivos",
+  shareExplain: (name) =>
+    `Escolha a pasta com seus filmes e séries. Nada é copiado nem enviado para a nuvem: ${name} assiste direto deste aparelho enquanto vocês dois estão com o Cinema aberto.`,
+  sharePrivacy: "Só nomes, durações e imagens pequenas vão para o seu contato, nunca onde os arquivos estão no seu disco.",
+  pickAgain: (folder) => `Escolher “${folder}” de novo`,
+  pickAgainExplain: "Os apps do Ghostly ainda não guardam acesso a uma pasta: escolha de novo cada vez que abrir o Cinema, e seu contato poderá assistir.",
+  reading: (done, total) => `Lendo seus arquivos: ${done} de ${total}`,
+  libraryCounts: (films, shows, episodes) => `${films} filmes · ${shows} séries · ${episodes} episódios`,
+  toConvert: (n) => (n === 1 ? "1 arquivo precisa ser convertido" : `${n} arquivos precisam ser convertidos`),
+  stopSharing: "Parar de compartilhar",
+  stopSharingConfirm: "Parar de compartilhar esta biblioteca com seu contato? Seus arquivos não são mexidos.",
+  sharedWith: (name) => `Compartilhada com ${name}`,
+  playHere: "Assistir aqui",
+  titleCard: "Sem imagem",
+};
+
+export function stringsFor(locale: string | undefined): { strings: Strings; lang: string } {
+  const tag = (locale ?? "en").toLowerCase();
+  if (tag.startsWith("pt")) return { strings: pt, lang: "pt-BR" };
+  return { strings: en, lang: "en" };
+}
+
+/** A language's name for people, in their language: "Português", "English". */
+export function languageName(tag: string | undefined, uiLang: string, fallback: string): string {
+  if (!tag || tag === "und") return fallback;
+  try {
+    const name = new Intl.DisplayNames([uiLang], { type: "language" }).of(tag);
+    if (name && name.toLowerCase() !== tag.toLowerCase()) return name.charAt(0).toUpperCase() + name.slice(1);
+  } catch {
+    /* an unknown tag */
+  }
+  return tag;
+}

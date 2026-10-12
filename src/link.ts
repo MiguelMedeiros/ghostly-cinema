@@ -248,7 +248,9 @@ export class Link {
     return new Promise<void>((resolve, reject) => {
       const item = { frame, control, resolve, reject };
       if (control) {
-        const firstData = this.queue.findIndex((q) => !q.control);
+        // Before the first data frame, but never before the frame chat.send has now.
+        const busy = this.queue.length && this.queue[0].frame === this.sending ? 1 : 0;
+        const firstData = this.queue.findIndex((q, i) => i >= busy && !q.control);
         if (firstData < 0) this.queue.push(item);
         else this.queue.splice(firstData, 0, item);
       } else {
@@ -275,7 +277,7 @@ export class Link {
           this.sentAt.push(this.now());
           this.sending = item.frame;
           await this.api.chat.send(item.frame);
-          this.queue.shift();
+          this.take(item);
           item.resolve();
           if (!item.control && this.now() - this.goodSince > 1000 && this.window < WINDOW.max) {
             this.window++;
@@ -291,7 +293,7 @@ export class Link {
             await this.sleep(RETRY_MS);
             continue;
           }
-          this.queue.shift();
+          this.take(item);
           item.reject(new LinkError(code === "offline" || code === "not-open" ? "peer-closed" : code));
         } finally {
           this.sending = null;
@@ -300,6 +302,11 @@ export class Link {
     } finally {
       this.pumping = false;
     }
+  }
+
+  private take(item: { frame: Frame }): void {
+    const at = this.queue.indexOf(item as (typeof this.queue)[number]);
+    if (at >= 0) this.queue.splice(at, 1);
   }
 
   private sleep(ms: number): Promise<void> {

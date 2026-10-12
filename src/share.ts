@@ -125,6 +125,29 @@ export class Share {
     return this.stored?.scans[id];
   }
 
+  /** The file picked in this session at that path. */
+  file(path: string): Blob | undefined {
+    return this.files.get(path);
+  }
+
+  showHasPicture(id: string): boolean {
+    return !!this.stored?.showPictures[id];
+  }
+
+  /** Stops sharing: the library and its pictures leave this chat's storage. The files are not touched. */
+  async forget(): Promise<void> {
+    const keys = await this.api.storage.keys();
+    for (const key of keys) if (key === "mine" || key.startsWith("mine:") || key.startsWith("pic:")) await this.api.storage.delete(key).catch(() => {});
+    this.stored = null;
+    this.library = null;
+    this.files.clear();
+    this.indexes.clear();
+    this.pictureBytes = 0;
+    this.progress = null;
+    this.changed();
+    this.onChange(0);
+  }
+
   private entry(id: string): Entry | undefined {
     return this.library?.films.find((e) => e.id === id) ?? this.library?.episodes.find((e) => e.id === id);
   }
@@ -181,20 +204,20 @@ export class Share {
     const step = async () => {
       this.progress!.done++;
       this.changed();
-      if (++dirty >= 10) {
+      if (++dirty >= 10 && this.stored === stored) {
         dirty = 0;
         await this.save();
       }
     };
     // Films first, by title: what the contact sees first.
     for (const e of todo) {
-      if (this.library !== lib) return;
+      if (this.library !== lib) return void (this.progress = null);
       this.progress.current = e.video.kind === "film" ? e.video.title : `${e.video.show} S${e.video.season}E${e.video.episode}`;
       stored.scans[e.id] = await this.read(e);
       await step();
     }
     for (const s of shows) {
-      if (this.library !== lib) return;
+      if (this.library !== lib) return void (this.progress = null);
       this.progress.current = s.title;
       const poster = s.poster && this.files.get(s.poster);
       let bytes = poster ? await this.pictures.fromImage(poster).catch(() => null) : null;
@@ -207,6 +230,7 @@ export class Share {
       await step();
     }
     this.progress = null;
+    if (this.stored !== stored) return;
     stored.rev = Date.now();
     await this.save();
     this.changed();

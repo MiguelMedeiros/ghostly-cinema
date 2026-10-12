@@ -22,6 +22,8 @@ export interface ChannelOptions {
   latencyMs?: number;
   /** Bytes the channel holds before `chat.send` answers `offline` (Iroh in a browser: 120 KiB). */
   budgetBytes?: number;
+  /** How long `chat.send` takes to answer, as a round trip to the client does. */
+  sendDelayMs?: number;
 }
 
 export class MockBroker implements MiniAppApi {
@@ -82,6 +84,7 @@ export class MockBroker implements MiniAppApi {
         this.refused.set(code, (this.refused.get(code) ?? 0) + 1);
         throw new Error(code);
       };
+      if (this.channel.sendDelayMs) await new Promise((resolve) => setTimeout(resolve, this.channel.sendDelayMs));
       const peer = this.peer;
       if (!this.isOpen) refuse("not-open");
       if (!peer?.isOpen) refuse("peer-closed");

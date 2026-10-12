@@ -86,6 +86,21 @@ describe("indexing an MP4", () => {
     }
   });
 
+  it("writes a MOV's QuickTime sound entry as an ISO one, which Media Source takes", async () => {
+    const index = await indexMp4(bytesReader(fixture("camera.mov")));
+    const stsd = index.audio[0].stsd;
+    const [box] = children(stsd, 0, stsd.length);
+    const [entry] = children(stsd, box.body + 8, box.end);
+    expect(entry.type).toBe("mp4a");
+    expect(u32(stsd, entry.body + 8) >>> 16).toBe(0); // version 0
+    expect(u32(stsd, entry.body + 24) >>> 16).toBe(48000);
+    expect(children(stsd, entry.body + 28, entry.end).map((c) => c.type)).toEqual(["esds"]);
+    // An MP4's entry is copied as it is.
+    const mp4 = await indexMp4(bytesReader(fixture("film.mp4")));
+    const raw = fixture("film.mp4");
+    expect(Buffer.from(raw).includes(Buffer.from(mp4.audio[0].stsd))).toBe(true);
+  });
+
   it("gives HEVC its codec string", async () => {
     const index = await indexMp4(bytesReader(fixture("hevc.mp4")));
     expect(index.video.codec).toMatch(/^hvc1\.1\.6\.L\d+\.90$/);

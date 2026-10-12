@@ -18,10 +18,16 @@ import type { MiniAppApi, MiniAppJson, MiniAppPeerEvent } from "./vendor/miniApp
 
 /** The protocol this build speaks, said in `hello`. */
 export const PROTOCOL = 1;
-/** Raw bytes in one `dat` frame: as base64 with the frame's own fields, under the 32 KiB `chat.send` takes. */
-export const CHUNK_BYTES = 24_000;
-/** Frames this side sends a second, under the 48 `chat.send` allows, leaving room for the client's own counting. */
-export const FRAMES_PER_SECOND = 40;
+/**
+ * Raw bytes in one `dat` frame: 32,640 characters of base64 and the frame's own fields (about 60 with large
+ * numbers), under the 32 KiB `chat.send` takes.
+ */
+export const CHUNK_BYTES = 24_480;
+/**
+ * Frames this side sends a second, under the 48 `chat.send` allows and the broker's 50 requests of every kind (the
+ * pacing in broker.ts keeps all calls under 46). With CHUNK_BYTES this is the ceiling of a stream: about 8.8 Mbit/s.
+ */
+export const FRAMES_PER_SECOND = 44;
 /** Chunks in flight, unacknowledged: where the window starts, and its bounds. */
 export const WINDOW = { start: 4, min: 1, max: 16 };
 /** The most one transfer may carry: a fragment or a catalogue is far below it. */

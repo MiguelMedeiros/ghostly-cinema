@@ -9,7 +9,7 @@ npm run build                                          # here: dist/index.html
 git clone --branch dev https://github.com/MiguelMedeiros/ghostly /tmp/ghostly-e2e
 cd /tmp/ghostly-e2e && npm ci
 cp ~/code/ghostly-cinema/test/ghostly/apps-cinema.spec.ts e2e/web/
-CINEMA_DIR=~/code/ghostly-cinema npx playwright test -c e2e/playwright.config.ts --project web e2e/web/apps-cinema.spec.ts
+CINEMA_DIR=~/code/ghostly-cinema npx playwright test -c e2e/playwright.config.ts --project=web e2e/web/apps-cinema.spec.ts
 ```
 
 The first run builds Ghostly's web app (`npm run build:web`, a few minutes). Nothing is committed to Ghostly.

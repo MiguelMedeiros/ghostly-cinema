@@ -25,8 +25,8 @@ contact's side, and storage per app and per chat. The UI speaks English and Braz
    time from any keyframe. A QuickTime sound entry (`.mov`) is written as an ISO one. MKV, AVI and the rest show as
    "needs converting", with the `ffmpeg -c copy` line to do it losslessly.
 3. **The wire** (`src/link.ts`, [docs/protocol.md](docs/protocol.md)). The contact pulls: `get` a catalogue, a
-   picture, an init segment, a fragment or a subtitle; the answer comes as base64 chunks of 24,000 bytes, acknowledged,
-   a window of them in flight, at most 40 frames a second (the broker takes 48). A frame refused because the channel is
+   picture, an init segment, a fragment or a subtitle; the answer comes as base64 chunks of 24,480 bytes, acknowledged,
+   a window of them in flight, at most 44 frames a second (the broker takes 48): a ceiling of about 8.8 Mbit/s. A frame refused because the channel is
    full (`offline` while the contact is still open) is sent again and the window shrinks.
 4. **The player** (`src/player.ts`). Media Source, attached with `video.srcObject` in WebKit and a `blob:` URL in
    Chromium (measured in the runner's sandbox: each engine refuses the other way). It keeps 60 s ahead; a seek outside

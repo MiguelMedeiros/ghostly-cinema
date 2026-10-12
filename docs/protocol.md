@@ -22,7 +22,7 @@ The side that wants something asks; the other answers with bytes.
 |---|---|---|
 | `{t: "get", r, k, id?, from?, at?, a?, s?}` | asker | Request `r` (a number of the asker's, from 1). `k`: `cat` the catalogue (JSON), `pic` a picture (JPEG) of a title or a show, `init` a film's init segment, `seg` a fragment from video sample `from` or from the keyframe before `at` seconds, `sub` subtitle `s`'s file. `a` is the audio track |
 | `{t: "hdr", r, n, m?}` | answerer | `n` bytes follow; `m` what they are (below) |
-| `{t: "dat", r, i, b, a?}` | answerer | Chunk `i`: base64 of bytes `i × 24000` to `(i + 1) × 24000`. `a: 1` asks for an ack now (the window is full, or it is the last chunk) |
+| `{t: "dat", r, i, b, a?}` | answerer | Chunk `i`: base64 of bytes `i × 24480` to `(i + 1) × 24480`. `a: 1` asks for an ack now (the window is full, or it is the last chunk) |
 | `{t: "ack", r, i}` | asker | Every chunk before `i` arrived. Sent every 2 chunks and when asked |
 | `{t: "err", r, e}` | answerer | Refused: `no-library`, `not-found`, `not-picked` (the folder must be picked again), `convert`, `bad-request`, `too-large`, `damaged`, or what reading the file found (`no-moov`, `encrypted`, `unknown-codec`…) |
 | `{t: "cancel", r}` | asker | Stop sending `r` (a seek) |
@@ -30,7 +30,7 @@ The side that wants something asks; the other answers with bytes.
 `m` for `init`: `{m: "video/mp4; codecs=…", d: seconds, au: [audio languages], n: video samples}`. For `seg`:
 `{from, to, s, e, last}`: the video samples `[from, to)`, the seconds they cover, and whether it is the end.
 
-**Flow.** One queue per side for every frame, at most 40 a second (the broker takes 48 `chat.send` and 50 requests of
+**Flow.** One queue per side for every frame, at most 44 a second (the broker takes 48 `chat.send` and 50 requests of
 any kind a second), control frames before chunks. A window of chunks unacknowledged, from 4, growing by one each second
 the channel takes everything and halving when it refuses (`offline` or `too-fast` while the contact is still open: on
 Iroh and HyperDHT in a browser a full channel answers `offline`); the refused frame is sent again. A transfer that hears

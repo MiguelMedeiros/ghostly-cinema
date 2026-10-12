@@ -27,11 +27,36 @@ export interface PlayerState {
   rate: number;
 }
 
-interface Appended {
+export interface Appended {
   start: number;
   end: number;
   to: number;
   last: boolean;
+}
+
+/** How far behind the playhead a held range may end and still be carried on from, rather than asked for again. */
+const CARRY_ON = 30;
+
+/**
+ * What to ask for next, from where the playhead is, what the buffer holds and the fragments appended: a fragment
+ * from a video sample (carrying on from the last one), one at a time (a seek), nothing (enough ahead), or "end".
+ *
+ * A seek lands on the keyframe before the time asked, and one fragment (about 1 MiB) may end before that time when
+ * the film's bitrate is high: then the playhead is just past a held range, and the stream carries on from it. Asking
+ * for the time again would bring the same fragment back for ever.
+ */
+export function nextAsk(t: number, ranges: { start: number; end: number }[], appended: Appended[], duration: number): { from?: number; at?: number } | "end" | null {
+  const range = ranges.find((r) => r.start - 0.3 <= t && t < r.end);
+  const tailOf = (end: number) => appended.find((a) => Math.abs(a.end - end) < 0.6 || (a.start <= end && end <= a.end));
+  if (!range) {
+    const before = ranges.filter((r) => r.start - 0.3 <= t && r.end <= t && t - r.end < CARRY_ON).sort((x, y) => y.end - x.end)[0];
+    const tail = before && tailOf(before.end);
+    return tail && !tail.last ? { from: tail.to } : { at: t };
+  }
+  if (range.end - t >= AHEAD) return null;
+  const tail = tailOf(range.end);
+  if (tail?.last && range.end >= duration - 1) return "end";
+  return tail ? { from: tail.to } : { at: range.end };
 }
 
 type MediaSourceCtor = typeof MediaSource;
@@ -184,27 +209,20 @@ export class StreamPlayer {
   /** Asks for the next fragment when the buffer ahead is short. One request at a time. */
   private pump(): void {
     if (this.busy || this.disposed || !this.sb || this.phase === "error") return;
-    const t = this.video.currentTime;
-    const range = this.buffered(t);
-    let ask: { from?: number; at?: number };
-    if (!range) {
-      ask = { at: t };
-    } else {
-      if (range.end - t >= AHEAD) return;
-      const tail = this.appended.find((a) => Math.abs(a.end - range.end) < 0.6 || (a.start <= range.end && range.end <= a.end));
-      if (tail?.last && range.end >= this.duration - 1) {
-        if (this.ms?.readyState === "open" && !this.sb.updating) {
-          try {
-            this.ms.endOfStream();
-          } catch {
-            /* already ended */
-          }
+    const b = this.sb.buffered;
+    const ranges = Array.from({ length: b.length }, (_, i) => ({ start: b.start(i), end: b.end(i) }));
+    const ask = nextAsk(this.video.currentTime, ranges, this.appended, this.duration);
+    if (ask === "end") {
+      if (this.ms?.readyState === "open" && !this.sb.updating) {
+        try {
+          this.ms.endOfStream();
+        } catch {
+          /* already ended */
         }
-        return;
       }
-      ask = tail ? { from: tail.to } : { at: range.end };
+      return;
     }
-    void this.load(ask);
+    if (ask) void this.load(ask);
   }
 
   private async load(ask: { from?: number; at?: number }): Promise<void> {

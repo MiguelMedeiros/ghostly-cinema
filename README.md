@@ -29,7 +29,7 @@ contact's side, and storage per app and per chat. The UI speaks English and Braz
    a window of them in flight, at most 40 frames a second (the broker takes 48). A frame refused because the channel is
    full (`offline` while the contact is still open) is sent again and the window shrinks.
 4. **The player** (`src/player.ts`). Media Source, attached with `video.srcObject` in WebKit and a `blob:` URL in
-   Chromium (measured in the runner's sandbox: each engine refuses the other way). It keeps 90 s ahead; a seek outside
+   Chromium (measured in the runner's sandbox: each engine refuses the other way). It keeps 60 s ahead; a seek outside
    what it holds drops the request under way and asks for the fragment at the new time.
 
 What it cannot do with today's app API, and what Ghostly would need (proposed in

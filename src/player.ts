@@ -12,7 +12,7 @@ import { LinkError, type Link } from "./link.ts";
 import { decodeText, parseSubtitles } from "./subtitles.ts";
 
 /** Seconds kept ahead of the playhead, and behind it. */
-export const AHEAD = 90;
+export const AHEAD = 60;
 export const BEHIND = 30;
 
 export type Phase = "starting" | "playing" | "buffering" | "paused" | "ended" | "error";

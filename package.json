@@ -12,6 +12,7 @@
     "check:bundle": "node scripts/bundle.mjs",
     "gen:fixtures": "node scripts/fixtures.mjs",
     "build": "tsc --noEmit -p tsconfig.json && vite build",
+    "demo": "node scripts/demo.mjs",
     "dev": "vite",
     "digest": "node scripts/digest.mjs",
     "stage": "node scripts/stage.mjs",

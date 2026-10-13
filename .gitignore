@@ -8,3 +8,5 @@ release
 *.pem
 test-results
 playwright-report
+demo-library
+.claude

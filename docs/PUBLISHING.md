@@ -102,7 +102,7 @@ sequence.
 The bundle goes in a commit of its own, straight after the commit it was built from, so the store can pin that commit:
 
 ```sh
-git add app.ghostlyapp scripts/bundle.mjs docs/PUBLISHING.md   # the last two the first time only
+git add app.ghostlyapp scripts/bundle.mjs docs/PUBLISHING.md CHANGES.md   # the key pinned, the table, "0.1.0 (sequence 1)"
 git commit -m "Cinema 0.1.0 (sequence 1)"
 git push origin main
 npm run check:bundle -- --listing     # prints the store's listing.json, pinned to that commit

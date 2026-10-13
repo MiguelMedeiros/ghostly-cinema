@@ -31,11 +31,16 @@ describe("the manifest", () => {
 describe("the bundle check", () => {
   const source = read("ghostly-app.json");
   const page = new TextEncoder().encode("<!doctype html>");
-  const key = "y".repeat(52);
+  // Empty until the first version is signed, then the Cinema key: the tests hold either way.
+  const key = PUBLISHER || "y".repeat(52);
 
-  it("passes this build under any key until the key is pinned", () => {
-    expect(PUBLISHER).toBe("");
+  it("passes this build under the Cinema key (any key until it is pinned)", () => {
+    expect(PUBLISHER).toMatch(/^(?:[a-z0-9]{52})?$/);
     expect(problems(expected(source, page, 1, key), source, page)).toEqual([]);
+  });
+
+  it.runIf(PUBLISHER)("refuses a bundle signed by another key once the key is pinned", () => {
+    expect(problems(expected(source, page, 1, "x".repeat(52)), source, page).join()).toMatch(/another publisher key/);
   });
 
   it("finds another page or a changed manifest", () => {

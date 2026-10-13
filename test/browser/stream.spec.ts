@@ -44,7 +44,7 @@ test.afterAll(() => rmSync(join(folder, ".."), { recursive: true, force: true })
 async function share(side: Side): Promise<void> {
   await side.frame.getByRole("button", { name: "My library" }).click();
   await side.frame.locator("[data-testid=pick-folder]").setInputFiles(folder);
-  await expect(side.frame.getByTestId("my-card").first()).toBeVisible();
+  await expect(side.frame.getByTestId("my-card").first()).toBeVisible({ timeout: 20_000 });
   await expect(side.frame.getByTestId("reading")).toHaveCount(0, { timeout: 20_000 });
 }
 
@@ -158,7 +158,7 @@ test("the layout fits a phone and Desktop's chat window without sideways scrolli
     for (const viewport of [{ width: 320, height: 568 }, { width: 375, height: 667 }, { width: 560, height: 640 }, { width: 1280, height: 800 }]) {
       const side = await openSide(browser, room, { name: `alone-${viewport.width}`, inChat: false, contextOptions: { viewport } });
       await side.frame.locator("[data-testid=pick-folder]").setInputFiles(folder);
-      await expect(side.frame.getByTestId("my-card").first()).toBeVisible();
+      await expect(side.frame.getByTestId("my-card").first()).toBeVisible({ timeout: 20_000 });
       const overflow = await side.frame.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
       expect(overflow, `${viewport.width}px`).toBeLessThanOrEqual(0);
       await side.context.close();

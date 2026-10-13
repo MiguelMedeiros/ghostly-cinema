@@ -226,7 +226,8 @@ export function mountCinema(root: HTMLElement, app: Cinema, api: MiniAppApi, s: 
       return;
     }
     const cont = app.watch.continueWatching();
-    const hero = cont[0] ?? films.find((f) => f.p && playableHere(f));
+    // The banner: what was being watched, else the longest film with a picture that plays here.
+    const hero = cont[0] ?? [...films].filter((f) => f.p && playableHere(f)).sort((x, y) => (y.d ?? 0) - (x.d ?? 0))[0];
     if (hero) main.append(heroBanner(hero, cat));
     const recent = [...cat.items]
       .filter((i) => i.at)
@@ -536,6 +537,14 @@ export function mountCinema(root: HTMLElement, app: Cinema, api: MiniAppApi, s: 
   };
   folderInput.addEventListener("change", () => picked(folderInput));
   filesInput.addEventListener("change", () => picked(filesInput));
+  // A folder handed over by the page the app runs in, as `npm run demo` does to share its sample library in one go.
+  // Only script in this frame can send it, and the files are still only what the person's page holds.
+  addEventListener("cinema:pick", (e) => {
+    const list = (e as CustomEvent<Picked[]>).detail;
+    if (!Array.isArray(list) || !list.length) return;
+    tab = "mine";
+    void app.share.pick(list).then(render);
+  });
 
   function renderMine(): void {
     const share = app.share;

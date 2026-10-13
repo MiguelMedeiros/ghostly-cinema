@@ -4,8 +4,13 @@
 // storage in this page's localStorage, so a reload of one side keeps its library.
 //
 //   npm run build && npm run demo        (then open http://localhost:5180)
-import { readFileSync } from "node:fs";
+//
+// "Compartilhar a biblioteca de exemplo" (or http://localhost:5180/?amostra) hands Miguel's side the files of
+// demo-library/ (not in git: put your own test films there) without a folder picker.
+import { createReadStream, existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { createServer } from "node:http";
+import { join, relative, resolve, sep } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const PORT = Number(process.env.PORT) || 5180;
 const RUNNER_CSP =
@@ -32,6 +37,10 @@ const BROKER = `<script>
       if (p) m.ok ? p.resolve(m.value) : p.reject(new Error(m.error));
     } else if (m.event === "chat.message") listeners.message.forEach((f) => f(m.data));
     else if (m.event === "chat.peer") listeners.peer.forEach((f) => f(m.data));
+    else if (m.event === "demo.pick") {
+      const list = m.data.map((x) => ({ path: x.path, file: new File([x.blob], x.path.split("/").pop(), { lastModified: x.modified }) }));
+      dispatchEvent(new CustomEvent("cinema:pick", { detail: list }));
+    }
   });
   window.ghostly = {
     context: () => call("context", []),
@@ -69,6 +78,8 @@ const HOST = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><met
 <header><b>Cinema · teste com dois lados</b>
   <button id="reload-miguel">Recarregar Miguel</button>
   <button id="reload-ana">Recarregar Ana</button>
+  <span id="demo-status"></span>
+  <button id="demo">Compartilhar a biblioteca de exemplo</button>
   <button id="clear">Apagar tudo</button>
 </header>
 <main>
@@ -137,13 +148,67 @@ for (const side of ["miguel", "ana"]) {
 }
 // The frames load only now: the broker above must listen before the app's first call.
 for (const side of ["miguel", "ana"]) frames[side].src = "/app?side=" + side;
+async function shareSample() {
+  const status = document.getElementById("demo-status");
+  status.textContent = "Lendo a biblioteca de exemplo…";
+  const list = await (await fetch("/demo-library.json")).json();
+  const data = [];
+  for (const [i, f] of list.entries()) {
+    status.textContent = "Lendo " + (i + 1) + " de " + list.length + "…";
+    data.push({ path: f.path, modified: f.modified, blob: await (await fetch("/demo-library/" + f.path.split("/").map(encodeURIComponent).join("/"))).blob() });
+  }
+  post("miguel", { event: "demo.pick", data });
+  status.textContent = "";
+}
+document.getElementById("demo").addEventListener("click", () => void shareSample());
+// ?amostra: the sample is shared as soon as Miguel's side is up.
+if (new URLSearchParams(location.search).has("amostra")) {
+  const wait = setInterval(() => {
+    if (open.miguel) {
+      clearInterval(wait);
+      setTimeout(() => void shareSample(), 800);
+    }
+  }, 200);
+}
 document.getElementById("clear").addEventListener("click", () => {
   for (const k of Object.keys(localStorage)) if (k.startsWith("cinema-demo:")) localStorage.removeItem(k);
   for (const side of ["miguel", "ana"]) { closeSide(side); frames[side].src = "/app?side=" + side + "&t=" + Date.now(); }
 });
 </script></body></html>`;
 
+const LIBRARY = new URL("../demo-library/", import.meta.url);
+
+/** Every file of demo-library, relative to it, the library folder's own name first. */
+function sample() {
+  const root = fileURLToPath(LIBRARY);
+  if (!existsSync(root)) return [];
+  return readdirSync(root, { recursive: true, withFileTypes: true })
+    .filter((d) => d.isFile() && !d.name.startsWith("."))
+    .map((d) => {
+      const full = join(d.parentPath ?? d.path, d.name);
+      return { path: relative(root, full).split(sep).join("/"), modified: Math.round(statSync(full).mtimeMs) };
+    });
+}
+
 createServer((req, res) => {
+  const url = new URL(req.url ?? "/", "http://localhost");
+  if (url.pathname === "/demo-library.json") {
+    res.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" });
+    res.end(JSON.stringify(sample()));
+    return;
+  }
+  if (url.pathname.startsWith("/demo-library/")) {
+    const rel = decodeURIComponent(url.pathname.slice("/demo-library/".length));
+    const full = resolve(fileURLToPath(LIBRARY), rel);
+    if (!full.startsWith(fileURLToPath(LIBRARY)) || !existsSync(full) || !statSync(full).isFile()) {
+      res.writeHead(404);
+      res.end();
+      return;
+    }
+    res.writeHead(200, { "content-type": "application/octet-stream", "content-length": statSync(full).size, "cache-control": "no-store" });
+    createReadStream(full).pipe(res);
+    return;
+  }
   if (req.url?.startsWith("/app")) {
     const page = readFileSync(new URL("../dist/index.html", import.meta.url), "utf8").replace("<head>", `<head>\n${BROKER}`);
     res.writeHead(200, { "content-type": "text/html; charset=utf-8", "content-security-policy": RUNNER_CSP, "cache-control": "no-store" });

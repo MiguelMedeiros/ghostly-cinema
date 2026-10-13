@@ -33,6 +33,10 @@ describe("subtitles", () => {
     expect(parseSubtitles(vtt)).toEqual([{ start: 62.5, end: 64, text: "Hi" }]);
   });
 
+  it("reads a file whose arrows are -> rather than -->", () => {
+    expect(parseSubtitles("1\n00:00:23,000 -> 00:00:24,500\nVocê é um idiota, Thom.\n")).toEqual([{ start: 23, end: 24.5, text: "Você é um idiota, Thom." }]);
+  });
+
   it("reads Windows-1252 when the bytes are not UTF-8", () => {
     const latin = new Uint8Array([0x63, 0x6f, 0x72, 0x61, 0xe7, 0xe3, 0x6f]); // "coração" in Windows-1252
     expect(decodeText(latin)).toBe("coração");

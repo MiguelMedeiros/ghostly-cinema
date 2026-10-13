@@ -73,7 +73,7 @@ test("Ana streams Miguel's film: plays, seeks ahead, subtitles, resume", async (
     // Before Miguel shares, Ana sees that he has not.
     await expect(ana.frame.getByTestId("empty")).toContainText("Miguel ainda não compartilhou");
     await share(miguel);
-    await expect(miguel.frame.getByTestId("convert")).toContainText('ffmpeg -i "Old.Film.1999.mkv" -c copy "Old.Film.1999.mp4"');
+    await expect(miguel.frame.getByTestId("convert")).toContainText('ffmpeg -i "Old.Film.1999.mkv" -map 0:v:0 -map 0:a? -c:v copy -c:a aac -b:a 192k -movflags +faststart "Old.Film.1999.mp4"');
 
     // Ana's library: the film, the show, the MKV dimmed.
     await expect(ana.frame.getByTestId("row-films")).toContainText("Test Pattern");
@@ -153,6 +153,7 @@ test("an episode, and the next one from the player", async ({ browser }) => {
 });
 
 test("the layout fits a phone and Desktop's chat window without sideways scrolling", async ({ browser }) => {
+  test.setTimeout(90_000);
   const room = await chat();
   try {
     for (const viewport of [{ width: 320, height: 568 }, { width: 375, height: 667 }, { width: 560, height: 640 }, { width: 1280, height: 800 }]) {

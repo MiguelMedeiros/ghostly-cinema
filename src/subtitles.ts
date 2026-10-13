@@ -12,6 +12,8 @@ export interface Cue {
 
 /** The most cues one file may give: a feature film has about 2,000. */
 const MAX_CUES = 20_000;
+/** The arrow between a cue's times. */
+const ARROW = /\s*-{1,2}>\s*/;
 const MAX_TEXT = 1000;
 
 /** UTF-8 when the bytes are UTF-8 (a BOM, or no invalid sequence), otherwise Windows-1252. UTF-16 with a BOM too. */
@@ -53,9 +55,10 @@ export function parseSubtitles(text: string): Cue[] {
   const blocks = text.replace(/^﻿/, "").replace(/\r\n?/g, "\n").split(/\n{2,}/);
   for (const block of blocks) {
     const lines = block.split("\n");
-    const at = lines.findIndex((l) => l.includes("-->"));
+    // `-->` as the formats say; `->` as some files have it (Tears of Steel's own pt-BR subtitles).
+    const at = lines.findIndex((l) => ARROW.test(l));
     if (at < 0) continue;
-    const [left, right = ""] = lines[at].split("-->");
+    const [left, right = ""] = lines[at].split(ARROW);
     const start = parseTimestamp(left);
     const end = parseTimestamp(right.trim().split(/\s+/)[0] ?? "");
     if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) continue;

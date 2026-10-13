@@ -5,6 +5,7 @@
 import type { Cinema } from "./app.ts";
 import { displayTitle, type CatItem, type CatShow, type Catalogue, type CatSubtitle } from "./catalogue.ts";
 import { append, clear, h } from "./dom.ts";
+import { convertCommand, qualityLabel } from "./convert.ts";
 import type { Entry } from "./library.ts";
 import { languageTag } from "./names.ts";
 import { canPlay, LocalPlayer, StreamPlayer, type PlayerState } from "./player.ts";
@@ -149,7 +150,8 @@ export function mountCinema(root: HTMLElement, app: Cinema, api: MiniAppApi, s: 
     const parts: string[] = [];
     if (item.k === "f" && item.y) parts.push(String(item.y));
     if (item.d) parts.push(s.minutes(minutes(item.d)));
-    if (item.h) parts.push(item.h >= 1600 ? "4K" : item.h >= 1000 ? "1080p" : item.h >= 700 ? "720p" : "SD");
+    const quality = qualityLabel(item.w, item.h);
+    if (quality) parts.push(quality);
     return parts.join(" · ");
   }
 
@@ -557,7 +559,11 @@ export function mountCinema(root: HTMLElement, app: Cinema, api: MiniAppApi, s: 
       );
       return;
     }
-    const toConvert = [...lib.films, ...lib.episodes].filter((e) => !e.container || share.scan(e.id)?.x);
+    // Not MP4, unreadable, or in a codec this device's browser cannot play (the contact's is likely the same kind).
+    const toConvert = [...lib.films, ...lib.episodes].filter((e) => {
+      const scan = share.scan(e.id);
+      return !e.container || scan?.x || (scan?.m && !canPlay(scan.m));
+    });
     main.append(
       h(
         "section",
@@ -595,7 +601,7 @@ export function mountCinema(root: HTMLElement, app: Cinema, api: MiniAppApi, s: 
           { class: "convert", "data-testid": "convert" },
           h("h2", {}, s.toConvert(toConvert.length)),
           h("p", { class: "sub" }, s.convertHint),
-          h("pre", {}, toConvert.slice(0, 50).map((e) => `ffmpeg -i "${e.path.split("/").pop()}" -c copy "${e.path.split("/").pop()!.replace(/\.[^.]+$/, "")}.mp4"`).join("\n")),
+          h("pre", {}, toConvert.slice(0, 50).map((e) => convertCommand(e.path.split("/").pop()!, share.scan(e.id)?.m)).join("\n")),
         ),
       );
     }

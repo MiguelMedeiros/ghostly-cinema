@@ -4,7 +4,7 @@ What each published version of Cinema changed, newest first. A version is publis
 `app.ghostlyapp`, is committed here and the [Ghostly store](https://github.com/MiguelMedeiros/ghostly-store) lists it
 ([docs/PUBLISHING.md](docs/PUBLISHING.md)). `sequence` is the number Ghostly orders versions by.
 
-## 0.1.0 (not published yet)
+## 0.1.0 (sequence 1)
 
 The first version.
 

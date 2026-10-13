@@ -22,7 +22,7 @@ import { fileURLToPath } from "node:url";
  * the owner signs the first version (`ghostly app publish` makes the key then): write the key it prints here, in the
  * same commit as the first bundle (docs/PUBLISHING.md). While it is empty, any key passes and the script says so.
  */
-export const PUBLISHER = "";
+export const PUBLISHER = "oanmb35oi8qosn6m5zwuraq1odwgepopohuxzmq19jd513p55hgo";
 export const REPO = "MiguelMedeiros/ghostly-cinema";
 export const BUNDLE = "app.ghostlyapp";
 /** Where clients read newer bundles: this repository's HEAD. The manifest's `sources` names it. */

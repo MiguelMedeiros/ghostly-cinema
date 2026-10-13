@@ -14,10 +14,10 @@ and is checked by CI; "Sign" and the store's index are the owner's steps.
 
 | | |
 |---|---|
-| Cinema's reference | `<publisher key>/cinema`, known once the first version is signed |
+| Cinema's reference | `oanmb35oi8qosn6m5zwuraq1odwgepopohuxzmq19jd513p55hgo/cinema` |
 | Publisher key file (owner's machine only) | `~/ghostly-keys/cinema-publisher.key`, made by the first `ghostly app publish` |
-| Store folder | `apps/cinema.<first 16 characters of the key>/` |
-| Published so far | Nothing. See [CHANGES.md](../CHANGES.md) |
+| Store folder | `apps/cinema.oanmb35oi8qosn6m/` |
+| Published so far | 0.1.0 (sequence 1). See [CHANGES.md](../CHANGES.md) |
 
 **The repository must be public** for the store to list it: clients fetch the bundle from jsDelivr pinned to a commit,
 and from `raw.githubusercontent.com`, and neither serves a private repository. If this repository stays private, the

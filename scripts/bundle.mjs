@@ -8,9 +8,9 @@
 //                                                         by the Cinema key under that sequence
 //
 // It reads the bundle's manifest (WISP 1200: "GHOSTLYAPP1", the manifest's length, the manifest) and checks that it
-// is Cinema under the Cinema publisher key, that it says what ghostly-app.json says, and that its one file is
-// dist/index.html, byte for byte. It does NOT check the signature: `ghostly app verify` does that, and the store's
-// check does it again.
+// is Cinema under the Cinema publisher key, that it says what ghostly-app.json says, and that its files are
+// assets/icon.png (as icon.png) and dist/index.html, byte for byte. It does NOT check the signature: `ghostly app
+// verify` does that, and the store's check does it again.
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
@@ -52,13 +52,25 @@ export function readManifest(bytes) {
  */
 export const digestOf = (manifest) => sha256(Buffer.from(stable(manifest)));
 
-/** The manifest `ghostly app publish` makes of ghostly-app.json and the built page, under a key and a sequence. */
-export function expected(source, page, sequence, publisher = PUBLISHER) {
-  return { ...source, ghostlyApp: 1, publisher, sequence, files: [{ path: "index.html", size: page.length, sha256: sha256(page) }] };
+/** The icon, drawn by scripts/icon.mjs and committed. */
+export const ICON = fileURLToPath(new URL("../assets/icon.png", import.meta.url));
+const readIcon = () => readFileSync(ICON);
+
+/** The bundle's files as its manifest lists them: sorted by path, so icon.png before index.html. */
+export function filesOf(page, icon = readIcon()) {
+  return [
+    { path: "icon.png", size: icon.length, sha256: sha256(icon) },
+    { path: "index.html", size: page.length, sha256: sha256(page) },
+  ];
 }
 
-/** What is wrong with a bundle's manifest, given ghostly-app.json and the built page. Empty when nothing is. */
-export function problems(manifest, source, page) {
+/** The manifest `ghostly app publish` makes of ghostly-app.json, the built page and the icon, under a key and a sequence. */
+export function expected(source, page, sequence, publisher = PUBLISHER, icon = readIcon()) {
+  return { ...source, ghostlyApp: 1, publisher, sequence, files: filesOf(page, icon) };
+}
+
+/** What is wrong with a bundle's manifest, given ghostly-app.json, the built page and the icon. Empty when nothing is. */
+export function problems(manifest, source, page, icon = readIcon()) {
   const found = [];
   if (PUBLISHER && manifest.publisher !== PUBLISHER) found.push(`signed for another publisher key (${manifest.publisher}), not the Cinema key`);
   if (!Number.isSafeInteger(manifest.sequence) || manifest.sequence < 1) found.push(`sequence is ${JSON.stringify(manifest.sequence)}`);
@@ -68,8 +80,9 @@ export function problems(manifest, source, page) {
   }
   if (!(source.sources ?? []).includes(SOURCE)) found.push(`ghostly-app.json's sources does not name ${SOURCE}`);
   const files = Array.isArray(manifest.files) ? manifest.files : [];
-  if (files.length !== 1 || files[0].path !== "index.html") found.push(`holds ${files.map((f) => f.path).join(", ") || "no file"}, not index.html alone`);
-  else if (files[0].sha256 !== sha256(page) || files[0].size !== page.length) found.push(`its index.html (${files[0].size} bytes, ${files[0].sha256}) is not this build's (${page.length} bytes, ${sha256(page)})`);
+  const want = filesOf(page, icon);
+  if (files.length !== want.length || files.some((f, i) => f.path !== want[i].path)) found.push(`holds ${files.map((f) => f.path).join(", ") || "no file"}, not icon.png and index.html`);
+  else for (const [i, f] of files.entries()) if (f.sha256 !== want[i].sha256 || f.size !== want[i].size) found.push(`its ${f.path} (${f.size} bytes, ${f.sha256}) is not this build's (${want[i].size} bytes, ${want[i].sha256})`);
   return found;
 }
 

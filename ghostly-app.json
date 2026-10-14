@@ -1,11 +1,11 @@
 {
   "name": "cinema",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "kind": "mini-app",
   "title": "Cinema",
   "tagline": "Your films and series, shared with a contact in your chat",
   "description": "Pick the folder with your own films and series: Cinema shows them as a library with posters, seasons and episodes, and your contact streams any title from your device while you both have Cinema open in the chat. Seeking, resume where you stopped, subtitles (.srt, .vtt) and audio languages. Nothing is uploaded and nothing is looked up online: titles come from your files' names, pictures from files beside them or a frame of the video. Plays MP4, M4V and MOV.",
-  "releaseNotes": "The first version: a library from your own folder, streamed to a contact in the chat, with seeking, resume, subtitles and audio languages.",
+  "releaseNotes": "Cinema has its own icon. Subtitles that write -> between times now show, a MOV with MP3 sound gets the right ffmpeg line, and a widescreen 1280x534 film is labelled 720p.",
   "entry": "index.html",
   "permissions": ["chat", "name"],
   "view": "full",

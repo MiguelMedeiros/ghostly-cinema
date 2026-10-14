@@ -1,7 +1,7 @@
 {
   "name": "ghostly-cinema",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "description": "Your own films and series as a library you share with a contact in a chat: a Ghostly mini-app that builds to one self-contained HTML file.",
   "license": "MIT",
@@ -11,6 +11,7 @@
   "scripts": {
     "check:bundle": "node scripts/bundle.mjs",
     "gen:fixtures": "node scripts/fixtures.mjs",
+    "gen:icon": "node scripts/icon.mjs",
     "build": "tsc --noEmit -p tsconfig.json && vite build",
     "demo": "node scripts/demo.mjs",
     "dev": "vite",

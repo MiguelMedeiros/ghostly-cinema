@@ -57,6 +57,8 @@ on subtitles, finds it under Continue watching, and after Miguel's app reloads a
 episode plays its next one, a MOV plays in Chromium, and the layout fits from a 320 px phone to a wide window.
 
 The test videos in `test/fixtures` are made by `npm run gen:fixtures` (ffmpeg) and committed.
+The icon, `assets/icon.png`, is drawn by `npm run gen:icon` (`scripts/icon.mjs`) and committed; `test/icon.test.ts`
+holds the two equal.
 
 ### Checked by hand
 

@@ -43,9 +43,12 @@ describe("the bundle check", () => {
     expect(problems(expected(source, page, 1, "x".repeat(52)), source, page).join()).toMatch(/another publisher key/);
   });
 
-  it("finds another page or a changed manifest", () => {
+  it("finds another page, another icon, a missing icon or a changed manifest", () => {
     const other = new TextEncoder().encode("<!doctype html><p>");
-    expect(problems(expected(source, other, 1, key), source, page).join()).toMatch(/is not this build's/);
+    expect(problems(expected(source, other, 1, key), source, page).join()).toMatch(/its index.html .* is not this build's/);
+    expect(problems(expected(source, page, 1, key), source, page, other).join()).toMatch(/its icon.png .* is not this build's/);
+    const pageOnly = expected(source, page, 1, key);
+    expect(problems({ ...pageOnly, files: pageOnly.files.slice(1) }, source, page).join()).toMatch(/not icon.png and index.html/);
     expect(problems({ ...expected(source, page, 1, key), title: "Not Cinema" }, source, page).join()).toMatch(/title/);
   });
 
